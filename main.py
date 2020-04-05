@@ -4,12 +4,12 @@ import sys
 
 
 class Optimizer:
-    def __init__(self, old_file, output_file):
-        self.imgs_path = old_file
-        self.old_file = os.listdir(old_file)
-        self.output_file = output_file
+    def __init__(self):
+        self.imgs_path = "old_imgs"
+        self.old_file = os.listdir(self.imgs_path)
+        self.output_file = "output_file"
         self.operations_to_perform = None
-        self.form = "jpeg"
+        
 
     def get_request(self):
         choices = {"1": "change_size", "2": "sharpen", "3": "change_file_type"}
@@ -46,6 +46,22 @@ class Optimizer:
         except OSError:
             print(OSError)
 
+    def change_file_type(self):
+        conversion_options = {"1":"bmp","2":"gif", "3":"ico","4":"jpeg" }
+
+        for key,option in conversion_options.items():
+            print( f"{key}: {option}")
+        
+        choice = input("\nwhat type would you like? ") 
+
+        while choice < 0 or choice > 4:
+             choice = input("\nwhat type would you like? ")
+
+        conversion_file_type = conversion_options[choice]
+
+
+        return conversion_file_type
+
     def sharpen(self, img):
         enhancer = ImageEnhance.Sharpness(img)
         factor = 2.0
@@ -57,28 +73,35 @@ class Optimizer:
             height = int(input("what height would you like? "))
             width = int(input("what width would you like? "))
         new_imgs = []
+
         for item in self.old_file:
-            new_img = item
             for term in self.operations_to_perform:
                 if term == "change_size":
                     new_img = self.change_size(item, (width, height))
-                if term == "change_file_type":
-                    pass
+                    new_img.format = item.split(".")[1]
+
                 if term == "sharpen":
-                    if type(new_img) == str:
-                        sharpened_img = self.sharpen(
-                            Image.open(f"{self.imgs_path}/{new_img}"))
-                    else:
-                        sharpened_img = self.sharpen(new_img)
-                    new_img = sharpened_img
+                    new_img = self.sharpen(
+                        Image.open(f"{self.imgs_path}/{item}"))
+                    new_img.format = item.split(".")[1]
+                    
+
+                if term == "change_file_type":
+                    new_img_format = self.change_file_type()
+                    new_img = Image.open(f"{self.imgs_path}/{item}")
+                    new_img.format = new_img_format
+
+             
+
             new_imgs.append(new_img)
+
         for i, img in enumerate(new_imgs):
-            img.save(f"{self.output_file}/new_img{i}.png", "png")
+            img.save(f"{self.output_file}/new_img{i}.{img.format}")
 
 
 if __name__ == "__main__":
     if not os.path.exists("./output_file"):
         os.mkdir("output_file")
-    new_pics = Optimizer(sys.argv[1], "output_file")
+    new_pics = Optimizer( )
     new_pics.get_request()
     new_pics.save_imgs()

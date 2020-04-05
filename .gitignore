@@ -1,4 +1,6 @@
-imgs_1
+old_imgs
 include
 Lib
 Scripts
+output_file
+pyvenv.cfg
