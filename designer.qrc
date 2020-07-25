@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>icons/resize-icon.ico</file>
+    <file>icons/sharpen-img-icon.ico</file>
+    <file>icons/change-file-type.ico</file>
+  </qresource>
+</RCC>
