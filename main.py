@@ -25,25 +25,12 @@ def change_size( img, width,height):
     try:
         size = calc_size(img, width, height)
         new_img = img.resize(size, Image.LANCZOS)
-        filename = img.filename.split("/")[-1:][0].split(".")[0]
-        extension = img.format
-        new_img.save(f"old_imgs/{filename}.{extension}")
+        
+        return new_img
     except OSError as err:
         print(err)
         raise OSError
 
-def change_file_type(img, extension):
-    #has to be a better way also check before completeing
-    try:
-        filename = img.filename.split("/")[-1:][0].split(".")[0]
-        if extension == ".PNG" or extension == ".GIF":
-            new_img = img.convert("RGBA")
-            new_img.putalpha(255)
-        else:
-            new_img = img.convert("RGB")
-        new_img.save(f"old_imgs/{filename}.{extension}", extension[1:].lower())
-    except OSError:
-        raise OSError
 
 def sharpen(img):
     factor = 2.0
@@ -52,10 +39,7 @@ def sharpen(img):
         new_img = enhancer.enhance(factor)
         enhancer2 = ImageEnhance.Sharpness(new_img)
         new_img_final = enhancer2.enhance(factor)
-
-        filename = img.filename.split("/")[-1:][0].split(".")[0]
-        extension = img.format
-        new_img_final.save(f"old_imgs/{filename}.{extension}")
+        return new_img_final
     except OSError:
         raise OSError
 

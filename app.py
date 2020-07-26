@@ -3,10 +3,10 @@
 # text box for measurment of resize on photos.
 # one check box for turning photos into icons which includes enhancement and file change.
 import os, sys
+import math
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QFileDialog
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
-from main import change_size, change_file_type, sharpen 
+from main import change_size, sharpen 
 
 Ui_MainWindow, main_baseClass = uic.loadUiType("Main_window.ui")
 class MainWindow(main_baseClass):
@@ -20,6 +20,7 @@ class MainWindow(main_baseClass):
       self.ui.choose_file_button.clicked.connect(self.choose_folder)
       self.ui.convert_btn.clicked.connect(self.pic_convert)
       self.ui.convert_btn.setEnabled(False)
+      self.ui.progressBar.setValue(0)
 
       self.file_start_path ="C:\\Users\\Eric\\Documents"
       self.folder_path = ""
@@ -68,43 +69,54 @@ class MainWindow(main_baseClass):
    def pic_convert(self):
       if self.folder_path != "":
          pic_strings = os.listdir(self.folder_path)
-         pic_files = [Image.open(f"{self.folder_path}/{img}") for img in pic_strings]
+         pic_files = [Image.open(f"{self.folder_path}/{img}")  for img in pic_strings if os.path.splitext(img)[1] != ".ini"]
 
-         if self.ui.actionchangeType.isChecked():
-            if self.ui.fileTypeSelector.currentText() != "None":
-               for pic in pic_files:
-                  change_file_type(pic,self.ui.fileTypeSelector.currentText() )
+         if not os.path.exists("C:/Users/Eric/Desktop/coverted pics"):
+                  os.mkdir("C:/Users/Eric/Desktop/coverted pics")
+
+         for i, img in enumerate(pic_files):
+            progress = (i + 1)*100/len(pic_files)
+            filename = img.filename.split("/")[-1:][0].split(".")[0]
+            original_extension = img.format
+            self.ui.progressBar.setValue(math.ceil(progress))
+
+            if self.ui.actionresize.isChecked():
+               if self.ui.heightInput.value() != 0 or self.ui.widthInput.value() != 0:
+                  height = self.ui.heightInput.value()
+                  width = self.ui.widthInput.value()
+                  img = change_size(img, width, height)
+                  img.format = original_extension
+               else:
+                  size_error_box = QtWidgets.QMessageBox(self)
+                  size_error_box.setText("You must provide height, width or both.")
+                  size_error_box.show()
+                  return
+            
+            if self.ui.actionsharpen.isChecked():
+               img = sharpen(img)
+               img.format = original_extension
+               
+            if self.ui.actionchangeType.isChecked():
+                  if self.ui.fileTypeSelector.currentText() != "None":
+                     extension = self.ui.fileTypeSelector.currentText()
+
+                     if extension == ".PNG" or extension == ".GIF" or extension == ".ICO":
+                           img = img.convert("RGBA")
+                           img.putalpha(255)
+                           extension = self.ui.fileTypeSelector.currentText().lower()
+                     else:
+                           img = img.convert("RGB")        
+                  else:
+                     extension_error = QtWidgets.QMessageBox(self)
+                     extension_error.setText("Please choose an extension")
+                     extension_error.show()
+                     return
             else:
-               change_extension_error = QtWidgets.QMessageBox(self)
-               change_extension_error.setText("Please select an extension.")
-               change_extension_error.show()
-               return
-         
-         if self.ui.actionresize.isChecked():
-            if self.ui.heightInput.value() != 0 or self.ui.widthInput.value() != 0:
-               height = self.ui.heightInput.value()
-               width = self.ui.widthInput.value()
-               for pic in pic_files:
-                  change_size(pic, width, height)
-            else:
-               size_error_box = QtWidgets.QMessageBox(self)
-               size_error_box.setText("You must provide height, width or both.")
-               size_error_box.show()
-               return
-
-
-         if self.ui.actionsharpen.isChecked():
-            for pic in pic_files:
-               sharpen(pic)
-
-         imgs_final_list = os.listdir("old_imgs")
-         if len(imgs_final_list) > 0:
-            for img in imgs_final_list:
-               final_img = Image.open(f"old_imgs/{img}")
-               final_img.save(f"output_file/new{img}")
-               os.remove(f"old_imgs/{img}")
-         
-           
+               extension = "." + original_extension  
+ 
+            img.save(f"C:/Users/Eric/Desktop/coverted pics/new{filename}{extension.lower()}", extension[1:].capitalize() )
+         self.ui.progressBar.setValue(0)
+                    
       else:
          no_file_selected_error_box = QtWidgets.QMessageBox(self)
          no_file_selected_error_box.setText("Please select a file")
