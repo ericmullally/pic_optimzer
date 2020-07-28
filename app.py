@@ -4,9 +4,11 @@
 # one check box for turning photos into icons which includes enhancement and file change.
 import os, sys
 import math
-from PIL import Image
+from PIL import Image, ImageFile
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from main import change_size, sharpen 
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Ui_MainWindow, main_baseClass = uic.loadUiType("Main_window.ui")
 class MainWindow(main_baseClass):
@@ -53,6 +55,7 @@ class MainWindow(main_baseClass):
             extension =  os.path.splitext(item)[1]
             if extension.lower() in file_extensions:
               pic_count += 1
+
             else:
                continue
          else:
@@ -68,14 +71,16 @@ class MainWindow(main_baseClass):
 
    def pic_convert(self):
       if self.folder_path != "":
+         # need to handle not all file being photos
+         
          pic_strings = os.listdir(self.folder_path)
-         pic_files = [Image.open(f"{self.folder_path}/{img}")  for img in pic_strings if os.path.splitext(img)[1] != ".ini"]
+         pic_files = (Image.open(f"{self.folder_path}/{img}")  for img in pic_strings if os.path.splitext(img)[1] != ".ini")
 
          if not os.path.exists("C:/Users/Eric/Desktop/coverted pics"):
                   os.mkdir("C:/Users/Eric/Desktop/coverted pics")
 
          for i, img in enumerate(pic_files):
-            progress = (i + 1)*100/len(pic_files)
+            progress = (i + 1)*100/len(pic_strings)
             filename = img.filename.split("/")[-1:][0].split(".")[0]
             original_extension = img.format
             self.ui.progressBar.setValue(math.ceil(progress))

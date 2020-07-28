@@ -24,6 +24,8 @@ def calc_size(img, width=0, height=0):
 def change_size( img, width,height):
     try:
         size = calc_size(img, width, height)
+        if size[0] < 0 or size[1] < 0:
+            print(img.filename)
         new_img = img.resize(size, Image.LANCZOS)
         
         return new_img
