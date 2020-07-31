@@ -3,29 +3,44 @@
 # text box for measurment of resize on photos.
 # one check box for turning photos into icons which includes enhancement and file change.
 import os, sys
-import math
 from PIL import Image, ImageFile
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
-from main import change_size, sharpen 
+from main import Main
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 Ui_MainWindow, main_baseClass = uic.loadUiType("Main_window.ui")
+
 class MainWindow(main_baseClass):
+   signal_start_background_job = QtCore.pyqtSignal(str, bool, str, tuple)
    def __init__(self, *args, **kwargs):
       super().__init__(*args, **kwargs)
       self.ui = Ui_MainWindow()
       self.ui.setupUi(self)
       self.ui.widthInput.setEnabled(False)
       self.ui.heightInput.setEnabled(False)
+      self.ui.fileTypeSelector.setEnabled(False)
+
       self.ui.actionresize.triggered.connect(self.toggle_size)
+      self.ui.actionchangeType.triggered.connect(self.change_type)
+
       self.ui.choose_file_button.clicked.connect(self.choose_folder)
       self.ui.convert_btn.clicked.connect(self.pic_convert)
       self.ui.convert_btn.setEnabled(False)
       self.ui.progressBar.setValue(0)
 
+      
+      self.worker = Main()
+      self.thread = QtCore.QThread()
+      self.worker.moveToThread(self.thread)
+      self.worker.progress_signal.connect(self.update_progress)
+     
       self.file_start_path ="C:\\Users\\Eric\\Documents"
       self.folder_path = ""
+      self.sharpen =False
+      self.extension = ""
+      self.size_tuple = (None, None)
+      self.signal_start_background_job.connect(self.worker.convertion_loop)
       self.show()
 
    def toggle_size(self):
@@ -35,6 +50,15 @@ class MainWindow(main_baseClass):
       else:
          self.ui.heightInput.setEnabled(False)
          self.ui.widthInput.setEnabled(False)
+
+
+   def change_type(self):
+      if self.ui.actionchangeType.isChecked():
+         self.ui.fileTypeSelector.setEnabled(True)
+      else:
+         self.ui.fileTypeSelector.setEnabled(False)
+
+
 
 
    def choose_folder(self):
@@ -47,7 +71,6 @@ class MainWindow(main_baseClass):
          return
       else:
          files = os.listdir(file_win)
-
       pic_count = 0
       for item in files:
          
@@ -71,65 +94,44 @@ class MainWindow(main_baseClass):
 
    def pic_convert(self):
       if self.folder_path != "":
-         # need to handle not all file being photos
-         
-         pic_strings = os.listdir(self.folder_path)
-         pic_files = (Image.open(f"{self.folder_path}/{img}")  for img in pic_strings if os.path.splitext(img)[1] != ".ini")
-
-         if not os.path.exists("C:/Users/Eric/Desktop/coverted pics"):
-                  os.mkdir("C:/Users/Eric/Desktop/coverted pics")
-
-         for i, img in enumerate(pic_files):
-            progress = (i + 1)*100/len(pic_strings)
-            filename = img.filename.split("/")[-1:][0].split(".")[0]
-            original_extension = img.format
-            self.ui.progressBar.setValue(math.ceil(progress))
-
-            if self.ui.actionresize.isChecked():
-               if self.ui.heightInput.value() != 0 or self.ui.widthInput.value() != 0:
-                  height = self.ui.heightInput.value()
-                  width = self.ui.widthInput.value()
-                  img = change_size(img, width, height)
-                  img.format = original_extension
-               else:
-                  size_error_box = QtWidgets.QMessageBox(self)
-                  size_error_box.setText("You must provide height, width or both.")
-                  size_error_box.show()
-                  return
-            
-            if self.ui.actionsharpen.isChecked():
-               img = sharpen(img)
-               img.format = original_extension
-               
-            if self.ui.actionchangeType.isChecked():
-                  if self.ui.fileTypeSelector.currentText() != "None":
-                     extension = self.ui.fileTypeSelector.currentText()
-
-                     if extension == ".PNG" or extension == ".GIF" or extension == ".ICO":
-                           img = img.convert("RGBA")
-                           img.putalpha(255)
-                           extension = self.ui.fileTypeSelector.currentText().lower()
-                     else:
-                           img = img.convert("RGB")        
-                  else:
-                     extension_error = QtWidgets.QMessageBox(self)
-                     extension_error.setText("Please choose an extension")
-                     extension_error.show()
-                     return
+         if self.ui.actionchangeType.isChecked():
+            if self.ui.fileTypeSelector.currentText() != "None":
+               self.extension = self.ui.fileTypeSelector.currentText()
             else:
-               extension = "." + original_extension  
- 
-            img.save(f"C:/Users/Eric/Desktop/coverted pics/new{filename}{extension.lower()}", extension[1:].capitalize() )
-         self.ui.progressBar.setValue(0)
-                    
+               extension_error_box = QtWidgets.QMessageBox(self)
+               extension_error_box.setText("Please select an extension.")
+               extension_error_box.show()
+               return
+         else:
+            self.extension = ""
+
+         if self.ui.actionresize.isChecked() == True:
+            if self.ui.heightInput.value() != 0 or self.ui.widthInput.value() != 0:
+               height = self.ui.heightInput.value()
+               width = self.ui.widthInput.value()  
+               self.size_tuple = (height, width)            
+            else:
+               size_error_box = QtWidgets.QMessageBox(self)
+               size_error_box.setText("You must provide height, width or both.")
+               size_error_box.show()
+               return
+         else:
+            self.size_tuple = (None, None)
+
+         if self.ui.actionsharpen.isChecked():
+            self.sharpen = True
+         else:
+            self.sharpen = False
+         self.thread.start()
+         self.signal_start_background_job.emit(self.folder_path, self.sharpen, self.extension, self.size_tuple)
       else:
-         no_file_selected_error_box = QtWidgets.QMessageBox(self)
-         no_file_selected_error_box.setText("Please select a file")
-         no_file_selected_error_box.show()
+        no_file_selected_error_box = QtWidgets.QMessageBox(self)
+        no_file_selected_error_box.setText("Please select a file")
+        no_file_selected_error_box.show()
 
-            
-      
-
+   @QtCore.pyqtSlot(int)
+   def update_progress(self, progress):
+      self.ui.progressBar.setValue(progress)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
