@@ -34,6 +34,7 @@ class MainWindow(main_baseClass):
       self.thread = QtCore.QThread()
       self.worker.moveToThread(self.thread)
       self.worker.progress_signal.connect(self.update_progress)
+      self.worker.finish_signal.connect(self.finish_display)
      
       self.file_start_path ="C:\\Users\\Eric\\Documents"
       self.folder_path = ""
@@ -132,6 +133,17 @@ class MainWindow(main_baseClass):
    @QtCore.pyqtSlot(int)
    def update_progress(self, progress):
       self.ui.progressBar.setValue(progress)
+
+   @QtCore.pyqtSlot(bool)
+   def finish_display(self, status):
+      if status == True:
+         success_message = QtWidgets.QMessageBox(self)
+         success_message.setText("Finished with no errors!")
+         success_message.show()
+      else:
+         photo_error_box = QtWidgets.QMessageBox(self)
+         photo_error_box.setText("not all files converted, check error logs.")
+         photo_error_box.show()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
