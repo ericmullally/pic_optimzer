@@ -59,7 +59,7 @@ class Main(QtCore.QObject):
 
         if not os.path.exists(f"{desktop}/coverted pics"):
                 os.mkdir(f"{desktop}/coverted pics")
-
+        
         for i, img in enumerate(pic_files):
             progress_val = (i + 1)*100/len(pic_strings)
             filename = img.filename.split("/")[-1:][0].split(".")[0]
@@ -87,10 +87,12 @@ class Main(QtCore.QObject):
                     continue
 
             if ext != "":
-                if ext == ".PNG" or ext== ".GIF" or ext== ".ICO":
+                if (ext == ".PNG" or ext== ".GIF" or ext== ".ICO") and img.mode != "RGBA":
                     img = img.convert("RGBA")
                     img.putalpha(255)
                     extension = ext
+                elif (ext == ".PNG" or ext== ".GIF" or ext== ".ICO") and img.mode == "RGBA":
+                    extension = ext 
                 else:
                     img = img.convert("RGB")   
                     extension = ext     
@@ -98,7 +100,11 @@ class Main(QtCore.QObject):
                 extension = "." + img.format
 
             try:
-                img.save(f"{desktop}/coverted pics/new{filename}{extension.lower()}", extension[1:].capitalize() )
+                sizes = [ (height,height) if height != 0 else (width,width) ]
+                if extension[1:].upper() == "ICO":
+                    img.save(f"{desktop}/coverted pics/new {filename}{extension.lower()}", sizes =sizes )
+                else:
+                    img.save(f"{desktop}/coverted pics/new {filename}{extension.lower()}", extension[1:].upper() )
             except Exception as ex:
                 with open("error_logs/error.txt", "w") as error_log:
                     error_log.write(f"{filename} failed to resize:  {ex}")

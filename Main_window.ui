@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>390</width>
-    <height>423</height>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0" colspan="2">
+    <item row="2" column="0" colspan="2">
      <widget class="QLabel" name="label_4">
       <property name="text">
        <string>File Type</string>
@@ -25,14 +25,14 @@
       </property>
      </widget>
     </item>
-    <item row="7" column="0" colspan="2">
+    <item row="6" column="0" colspan="2">
      <widget class="QPushButton" name="convert_btn">
       <property name="text">
        <string>Convert</string>
       </property>
      </widget>
     </item>
-    <item row="5" column="1">
+    <item row="4" column="1">
      <widget class="QLabel" name="label_2">
       <property name="text">
        <string>Width</string>
@@ -42,7 +42,35 @@
       </property>
      </widget>
     </item>
+    <item row="1" column="0" colspan="2">
+     <widget class="QPushButton" name="choose_file_button">
+      <property name="text">
+       <string>Choose File</string>
+      </property>
+     </widget>
+    </item>
     <item row="5" column="0">
+     <widget class="QSpinBox" name="heightInput">
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0" colspan="2">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>24</number>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QSpinBox" name="widthInput">
+      <property name="maximum">
+       <number>9999</number>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
        <string>Height</string>
@@ -52,7 +80,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="0" colspan="2">
+    <item row="3" column="0" colspan="2">
      <widget class="QComboBox" name="fileTypeSelector">
       <property name="layoutDirection">
        <enum>Qt::LeftToRight</enum>
@@ -92,81 +120,6 @@
         <string>.JPG</string>
        </property>
       </item>
-     </widget>
-    </item>
-    <item row="2" column="0" colspan="2">
-     <widget class="QScrollArea" name="scrollArea">
-      <property name="styleSheet">
-       <string notr="true"/>
-      </property>
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>370</width>
-         <height>120</height>
-        </rect>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QListView" name="fileWindow">
-          <property name="dragEnabled">
-           <bool>true</bool>
-          </property>
-          <property name="dragDropMode">
-           <enum>QAbstractItemView::DragDrop</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="2">
-     <widget class="QPushButton" name="choose_file_button">
-      <property name="text">
-       <string>Choose File</string>
-      </property>
-     </widget>
-    </item>
-    <item row="8" column="0" colspan="2">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="value">
-       <number>24</number>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0">
-     <widget class="QSpinBox" name="heightInput">
-      <property name="maximum">
-       <number>9999</number>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="1">
-     <widget class="QSpinBox" name="widthInput">
-      <property name="maximum">
-       <number>9999</number>
-      </property>
      </widget>
     </item>
    </layout>
