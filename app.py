@@ -1,7 +1,4 @@
-# Check if you want the photos to be enhanced
-# dropdown choice for file types to be turned into
-# text box for measurment of resize on photos.
-# one check box for turning photos into icons which includes enhancement and file change.
+
 import os, sys
 from PIL import Image, ImageFile
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
@@ -12,7 +9,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 Ui_MainWindow, main_baseClass = uic.loadUiType("Main_window.ui")
 
 class MainWindow(main_baseClass):
-   signal_start_background_job = QtCore.pyqtSignal(str, bool, str, tuple)
+   signal_start_background_job = QtCore.pyqtSignal(str, dict, str, tuple, int)
    def __init__(self, *args, **kwargs):
       super().__init__(*args, **kwargs)
       self.ui = Ui_MainWindow()
@@ -20,9 +17,13 @@ class MainWindow(main_baseClass):
       self.ui.widthInput.setEnabled(False)
       self.ui.heightInput.setEnabled(False)
       self.ui.fileTypeSelector.setEnabled(False)
+      self.ui.fileTypeSelector.currentTextChanged.connect(self.enableSlider)
+      self.ui.transparencySlider.valueChanged.connect(self.sliderChange)
+      self.ui.transparencySlider.setEnabled(False)
 
       self.ui.actionresize.triggered.connect(self.toggle_size)
       self.ui.actionchangeType.triggered.connect(self.change_type)
+      self.ui.actionsharpen.triggered.connect(self.sharpen_activated)
 
       self.ui.choose_file_button.clicked.connect(self.choose_folder)
       self.ui.convert_btn.clicked.connect(self.pic_convert)
@@ -38,29 +39,41 @@ class MainWindow(main_baseClass):
      
       self.file_start_path ="C:\\Users\\Eric\\Documents"
       self.folder_path = ""
-      self.sharpen =False
       self.extension = ""
       self.size_tuple = (None, None)
       self.signal_start_background_job.connect(self.worker.convertion_loop)
+      self.alphaValue = 255
+      self.state = {"change_size": False, "sharpen": False, "change_type": False}
       self.show()
 
    def toggle_size(self):
       if self.ui.actionresize.isChecked():
          self.ui.heightInput.setEnabled(True)
          self.ui.widthInput.setEnabled(True)
+         self.state["change_size"] = True
       else:
          self.ui.heightInput.setEnabled(False)
          self.ui.widthInput.setEnabled(False)
-
+         self.state["resize"] = False
 
    def change_type(self):
       if self.ui.actionchangeType.isChecked():
          self.ui.fileTypeSelector.setEnabled(True)
+         self.state["change_type"] = True
       else:
          self.ui.fileTypeSelector.setEnabled(False)
+         self.state["change_type"] = False
+  
+   def enableSlider(self):
+      alphaTypes = [".gif", ".ico", ".png"]
+      if self.ui.fileTypeSelector.currentText() in alphaTypes:
+         self.ui.transparencySlider.setEnabled(False)
+      else:
+         self.ui.transparencySlider.setEnabled(True)
 
-
-
+   def sliderChange(self):
+      self.ui.imgLabel.setStyleSheet(f"color: rgba(0,0,0,{self.ui.transparencySlider.value()})")
+      self.alphaValue = self.ui.transparencySlider.value()
 
    def choose_folder(self):
       file_win = QtWidgets.QFileDialog.getExistingDirectory(None,"Select folder",f'{self.file_start_path}' )
@@ -93,6 +106,12 @@ class MainWindow(main_baseClass):
          no_pics_error_box.setText("No photos found")
          no_pics_error_box.show()
 
+   def sharpen_activated(self):
+      if self.ui.actionsharpen.isChecked():
+         self.state["sharpen"] = True
+      else:
+         self.state["sharpen"] = False
+
    def pic_convert(self):
       if self.folder_path != "":
          if self.ui.actionchangeType.isChecked():
@@ -118,13 +137,10 @@ class MainWindow(main_baseClass):
                return
          else:
             self.size_tuple = (None, None)
+         
 
-         if self.ui.actionsharpen.isChecked():
-            self.sharpen = True
-         else:
-            self.sharpen = False
          self.thread.start()
-         self.signal_start_background_job.emit(self.folder_path, self.sharpen, self.extension, self.size_tuple)
+         self.signal_start_background_job.emit(self.folder_path, self.state, self.extension, self.size_tuple, self.alphaValue)
       else:
         no_file_selected_error_box = QtWidgets.QMessageBox(self)
         no_file_selected_error_box.setText("Please select a file")

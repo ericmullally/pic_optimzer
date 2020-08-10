@@ -14,4 +14,4 @@ setup(  name = "pic optimizer",
         version = "0.1",
         description = "optimizes pictures for web distribution",
         options = {"build_exe": build_exe_options},
-        executables = [Executable("app.py", base=base)])
+        executables = [Executable("app.py", base=base, icon = "icons/new convert-photo-to-icon-8.ico")])
