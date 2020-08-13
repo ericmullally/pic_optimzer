@@ -65,11 +65,11 @@ class MainWindow(main_baseClass):
          self.state["change_type"] = False
   
    def enableSlider(self):
-      alphaTypes = [".gif", ".ico", ".png"]
+      alphaTypes = [".GIF", ".ICO", ".PNG"]
       if self.ui.fileTypeSelector.currentText() in alphaTypes:
-         self.ui.transparencySlider.setEnabled(False)
-      else:
          self.ui.transparencySlider.setEnabled(True)
+      else:
+         self.ui.transparencySlider.setEnabled(False)
 
    def sliderChange(self):
       self.ui.imgLabel.setStyleSheet(f"color: rgba(0,0,0,{self.ui.transparencySlider.value()})")

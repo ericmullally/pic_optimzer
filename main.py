@@ -57,7 +57,12 @@ class Main(QtCore.QObject):
             if (ext in alpha_extensions) and img.mode != "RGBA":
                     img = img.convert("RGBA")
                     img.putalpha(alpha)
-                    
+            elif (ext not in alpha_extensions) and img.mode == "RGBA":
+                    img.load() # required for png.split()
+                    background = Image.new("RGB", img.size, (255, 255, 255))
+                    img.paste(background, mask=img.split()[2]) # 3 is the alpha channel
+                    img.mode = "RGB"
+                    img.show()
 
             if ext == ".ICO":
                 try:
