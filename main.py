@@ -58,9 +58,9 @@ class Main(QtCore.QObject):
                     img = img.convert("RGBA")
                     img.putalpha(alpha)
             elif (ext not in alpha_extensions) and img.mode == "RGBA":
-                    img.load() # required for png.split()
-                    background = Image.new("RGB", img.size, (255, 255, 255))
-                    img.paste(background, mask=img.split()[2]) # 3 is the alpha channel
+                    img.load() 
+                    background = Image.new("RGB", img.size, (0, 0, 0))
+                    img.paste(background, mask=img.split()[2]) 
                     img.mode = "RGB"
                     img.show()
 
@@ -107,7 +107,7 @@ class Main(QtCore.QObject):
                     continue
                 except:
                     continue
-            # change type and change only
+            # change type and change size only
             elif state["change_type"] and state["change_size"] and not state["sharpen"]:
                 try:
                     new_pic = self.change_type(self.change_size(img, size_tuple), filename, ext)

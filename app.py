@@ -30,14 +30,13 @@ class MainWindow(main_baseClass):
       self.ui.convert_btn.setEnabled(False)
       self.ui.progressBar.setValue(0)
 
-      
       self.worker = Main()
       self.thread = QtCore.QThread()
       self.worker.moveToThread(self.thread)
       self.worker.progress_signal.connect(self.update_progress)
       self.worker.finish_signal.connect(self.finish_display)
      
-      self.file_start_path ="C:\\Users\\Eric\\Documents"
+      self.file_start_path = os.path.join(os.path.join(os.environ['USERPROFILE']), 'Documents') 
       self.folder_path = ""
       self.extension = ""
       self.size_tuple = (None, None)
